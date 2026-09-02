@@ -2444,12 +2444,18 @@ def create_valuation_chart(
     if current.empty:
         return None
 
-    history = (
-        valuation_history
-        .tail(years)
-        if valuation_history is not None
-        else pd.DataFrame()
-    )
+    if (
+        valuation_history is None
+        or valuation_history.empty
+    ):
+
+        history = pd.DataFrame()
+
+    else:
+
+        history = valuation_history.tail(
+            years
+        )
 
     averages = {}
 
@@ -4003,17 +4009,27 @@ with valuation_tab:
             border=True,
         ):
 
-            st.plotly_chart(
-                create_valuation_chart(
-                    current_valuation,
-                    valuation_history,
-                    years,
-                ),
-                use_container_width=True,
-                config={
-                    "displayModeBar": False
-                },
+            valuation_fig = create_valuation_chart(
+                current_valuation,
+                valuation_history,
+                years,
             )
+
+            if valuation_fig is not None:
+
+                st.plotly_chart(
+                    valuation_fig,
+                    use_container_width=True,
+                    config={
+                        "displayModeBar": False
+                    },
+                )
+
+            else:
+
+                st.info(
+                    "Valuation data temporarily unavailable from Yahoo Finance."
+                )
 
 
     with v2:
